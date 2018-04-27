@@ -22,7 +22,7 @@ https://www.linkedin.com/in/ishay2b
 - opencv<p>
 
 ## Usage
-
+- set Caffe and Dlib path in CMakeLists.txt
 - CPP Demo : ./face_lardmark 
 - Python Demo: python face_landmark.py (created by [jiangwqcooler](https://github.com/jiangwqcooler))
 
