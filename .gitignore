@@ -1,1 +1,4 @@
 build/
+data/
+output_tmp/
+*.pyc

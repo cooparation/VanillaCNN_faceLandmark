@@ -1,0 +1,20 @@
+average_loss: 100
+base_lr: 0.001
+display: 100
+iter_size: 1
+lr_policy: "fixed"
+max_iter: 100000
+test_initialization: false
+test_interval: 50000000
+test_iter: 500
+net: "training/net1/train.prototxt"
+weight_decay: 0.0005
+snapshot_prefix: "model/net1/"
+solver_mode: GPU
+
+type: Adam
+#solver_type: ADAM
+momentum: 0.9
+momentum2: 0.999
+delta: 1e-8
+

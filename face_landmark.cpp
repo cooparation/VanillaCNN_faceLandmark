@@ -22,9 +22,9 @@ using namespace dlib;
 
 int main()
 {
-    string network = "../model/landmark_deploy.prototxt";
-    string weights = "../model/VanFace.caffemodel"; //landmark.caffemodel";
-    string img = "../../FaceAlignCorrect/1.jpg";
+    string network = "../train/landmark_deploy_5p.prototxt";//"../model/landmark_deploy.prototxt";
+    string weights = "/apps/liusj/snapshot/align/align_5p__iter_20000.caffemodel"; //"../model/VanFace.caffemodel"; //landmark.caffemodel";
+    string img = "../data/images/000001.jpg"; //"../../FaceAlignCorrect/1.jpg";
     Net<float> *net = new Net<float>(network,TEST);
 
     net->CopyTrainedLayersFrom(weights);
@@ -133,7 +133,7 @@ int main()
         }
         free(data);
     }
-    imshow("result", image);
+    //imshow("result", image);
     imwrite("result.jpg", image);
     free(net);
 

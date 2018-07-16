@@ -1,5 +1,4 @@
 name: "vanila"
-
 layer {
    type: "HDF5Data"
    top: "X" # same name as given in create_dataset!
@@ -321,5 +320,3 @@ layer {
   # known to Caffe
   loss_weight: 1
 }
-
-

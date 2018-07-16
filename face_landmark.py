@@ -113,6 +113,3 @@ print "per face detecting time is {}".format(per_face_det_time)
 print "per face landmark time is {}".format(per_face_landmark_time)
 print "per image detecting time is {}".format(per_image_det_time)
 print "per image detecting time is {}".format(per_image_landmark_time)
-
-
-
