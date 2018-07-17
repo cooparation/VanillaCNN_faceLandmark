@@ -24,9 +24,9 @@ class ImageInputDataLayer(caffe.Layer):
 
         # store data channels
         if self.params['img_format'] == 'RGB':
-            self.data_channels = 3
+            self.num_channels = 3
         elif self.params['img_format'] == 'GRAY':
-            self.data_channels = 1
+            self.num_channels = 1
         else:
             raise Exception("Unsupport img_format ...")
 
@@ -38,22 +38,36 @@ class ImageInputDataLayer(caffe.Layer):
 
         # === reshape tops ===
         top[0].reshape(
-            self.batch_size, self.data_channels, self.params['img_size'], self.params['img_size'])
+            self.batch_size, self.num_channels, self.params['img_size'], self.params['img_size'])
         top[1].reshape(
             self.batch_size, self.num_points* 2)
+
+    def preProcessImage(imgs):
+        """
+        process images before feeding to CNNs
+        imgs: N x 1 x W x H
+        """
+        imgs = imgs.astype(np.float32)
+        for i, img in enumerate(imgs):
+            m = img.mean()
+            s = img.std()
+            imgs[i] = (img - m) / s
+        return imgs
 
     def forward(self, bottom, top):
         """
         Load data.
         """
         images, labels = self.batch_generator.next()
+        #print 'liusanjun images num', len(images)
+        self.preProcessImage(images)
         top[0].data[...] = images
         top[1].data[...] = labels
 
     def reshape(self, bottom, top):
         # === reshape tops ===
         top[0].reshape(
-            self.batch_size, self.data_channels, self.params['img_size'], self.params['img_size'])
+            self.batch_size, self.num_channels, self.params['img_size'], self.params['img_size'])
         top[1].reshape(
             self.batch_size, self.num_points* 2)
 

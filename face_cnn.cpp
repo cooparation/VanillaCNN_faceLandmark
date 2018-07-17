@@ -18,16 +18,17 @@ using namespace cv;
 
 int main(int argc, char* argv[])
 {
-    string img = "../../FaceAlignCorrect/testFace.jpg";
+    string img = "../testing/test_images/testFace.jpg";
     if(argc != 2){
         cout << "Usage: " << argv[0] << " inImage"<< endl;
     }else{
         img = argv[1];
     }
 
-    string network = "../model/landmark_deploy.prototxt";
-    string weights = "../model/VanFace.caffemodel"; //landmark.caffemodel";
+    string network = "../vanilla-40/model_68p/deploy.prototxt";
+    string weights = "../vanilla-40/model_68p/_iter_1400000.caffemodel"; //landmark.caffemodel";
     Net<float> *net = new Net<float>(network,TEST);
+    int input_w = 40, input_h = 40;
 
     net->CopyTrainedLayersFrom(weights);
 
@@ -46,7 +47,7 @@ int main(int argc, char* argv[])
         cvtColor(srcROI,img2,CV_RGB2GRAY);
 
         img2.convertTo(img2, CV_32FC1);
-        Size dsize = Size(60,60);
+        Size dsize = Size(input_w, input_h);
         Mat img3 = Mat(dsize, CV_32FC1);
         resize(img2, img3, dsize, 0,0,INTER_CUBIC);
         cv::imwrite("image3.jpg", img3);
@@ -85,7 +86,7 @@ int main(int argc, char* argv[])
 
         net->Forward();
         cout << " total time = " << total_timer.MicroSeconds() / 1000 <<endl;
-        const boost::shared_ptr<caffe::Blob<float> > feature_blob = net->blob_by_name("Dense3");//获取该层特征
+        const boost::shared_ptr<caffe::Blob<float> > feature_blob = net->blob_by_name("Dense2");//获取该层特征
 
         float feat_dim = feature_blob->count() / feature_blob->num();//计算特征维度
         cout << feat_dim << endl;

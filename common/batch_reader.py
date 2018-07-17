@@ -103,6 +103,15 @@ class BatchReader():
         #p = Process(target=self._process, args=(0, self._sample_list[0: self._total_sample]))
         #p.start()
         #self._process_list.append(p)
+    def preProcessImage(img):
+        """
+        preprocess: image normalization
+        """
+        img = img.astype(np.float32)
+        m = img.mean()
+        s = img.std()
+        img = (img - m) / s
+        return img
 
     def _process(self, idx, sample_list):
         __landmark_augment = LandmarkAugment()
@@ -120,6 +129,8 @@ class BatchReader():
                     image = cv2.imread(sample[0])
                     if self._kwargs['img_format'] == 'RGB':
                         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                    if self._kwargs['img_format'] == 'GRAY':
+                        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 else:
                     image = cv2.imdecode(sample[0], cv2.IMREAD_COLOR)
                     #image = cv2.imdecode(sample[0], cv2.CV_LOAD_IMAGE_COLOR)
@@ -129,15 +140,16 @@ class BatchReader():
                                             self._kwargs['max_angle'], scale_range)
                 #cv2.imwrite("./output_tmp/tmp%d.jpg"%(sample_cnt), image_new)
 
-                # caffe data format
+                # caffe data format whc->chw
                 im_ = np.transpose(image_new, (2, 0, 1))
+                #preProcessImage(im_)
                 im_ = im_.astype(np.float32)
-                im_ = im_/127.5-1.0
+                #im_ = im_/127.5-1.0
 
                 # sent a batch
                 sample_cnt += 1
                 image_list.append(im_)
-                #image_list.append(image_new)
+                #image_list.append(image_new) # open to check the image
 
                 landmarks_list.append(landmarks_new)
                 if sample_cnt >= self._kwargs['batch_size']:
@@ -161,7 +173,7 @@ class BatchReader():
 if __name__ == '__main__':
     kwargs = {
         'input_paths': "data/try.txt",
-        'landmark_type': 5,
+        'landmark_type': 68,
         'batch_size': 10,
         'process_num': 30,
         'img_format': 'RGB',
@@ -190,7 +202,7 @@ if __name__ == '__main__':
            landmarks = landmarks.reshape([-1, 2])
            for l in landmarks:
                ii = tuple(l * (kwargs['img_size'], kwargs['img_size']))
-               #cv2.circle(image, (int(ii[0]), int(ii[1])), 2, (0,255,0), -1)
+               cv2.circle(image, (int(ii[0]), int(ii[1])), 2, (0,255,0), -1)
            print "image channels", image.shape[0], image.shape[1], image.shape[2]
            cv2.imwrite("%s/%d.jpg"%(output_folder, idx), image)
     print ("Done...Press ctrl+c to exit me")
