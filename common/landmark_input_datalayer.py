@@ -19,6 +19,17 @@ class ImageInputDataLayer(caffe.Layer):
         # store input as class variables
         self.batch_size = self.params['batch_size']
 
+        # store landmark_type
+        self.num_points = self.params['landmark_type']
+
+        # store data channels
+        if self.params['img_format'] == 'RGB':
+            self.data_channels = 3
+        elif self.params['img_format'] == 'GRAY':
+            self.data_channels = 1
+        else:
+            raise Exception("Unsupport img_format ...")
+
         # Create a batch loader to load the images.
         # we can disable reader when test
         if self.params['need_reader']:
@@ -27,9 +38,9 @@ class ImageInputDataLayer(caffe.Layer):
 
         # === reshape tops ===
         top[0].reshape(
-            self.batch_size, 3, self.params['img_size'], self.params['img_size'])
+            self.batch_size, self.data_channels, self.params['img_size'], self.params['img_size'])
         top[1].reshape(
-            self.batch_size, 10)
+            self.batch_size, self.num_points* 2)
 
     def forward(self, bottom, top):
         """
@@ -42,9 +53,9 @@ class ImageInputDataLayer(caffe.Layer):
     def reshape(self, bottom, top):
         # === reshape tops ===
         top[0].reshape(
-            self.batch_size, 3, self.params['img_size'], self.params['img_size'])
+            self.batch_size, self.data_channels, self.params['img_size'], self.params['img_size'])
         top[1].reshape(
-            self.batch_size, 10)
+            self.batch_size, self.num_points* 2)
 
     def backward(self, top, propagate_down, bottom):
         """

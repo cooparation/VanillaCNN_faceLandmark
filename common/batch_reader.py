@@ -136,8 +136,8 @@ class BatchReader():
 
                 # sent a batch
                 sample_cnt += 1
-                #image_list.append(im_)
-                image_list.append(image_new)
+                image_list.append(im_)
+                #image_list.append(image_new)
 
                 landmarks_list.append(landmarks_new)
                 if sample_cnt >= self._kwargs['batch_size']:
