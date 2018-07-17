@@ -1,4 +1,5 @@
 build/
 data/
 output_tmp/
+tmp/
 *.pyc
