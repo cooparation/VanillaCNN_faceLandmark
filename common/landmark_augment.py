@@ -48,6 +48,9 @@ class LandmarkAugment(object):
             image = cv2.imread(sample[0])
             if img_format == 'RGB':
                 image= cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            elif img_format == 'GRAY':
+                image= cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
             landmarks = sample[1]
             (x1, y1, x2, y2), _, _, _ = self.get_bbox_of_landmarks(image, landmarks, pad_rate, 0.5)
             new_sample_list.append(

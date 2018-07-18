@@ -264,26 +264,26 @@ layer {
 }
 
 layer {
-    name: "Dense2"
-    type: "InnerProduct"
-    bottom: "Abs5"
-    top: "Dense2"
-    param {
-        lr_mult: 1
-        decay_mult: 1
-    }
-    param {
-        lr_mult: 2
-        decay_mult: 0
-    }
-    inner_product_param {
-        num_output: 10
-        weight_filler {
-            type: "xavier"
-        }
-        bias_filler {
-            type: "constant"
-            value: 0
-        }
-    }
+  name: "Dense2"
+  type: "InnerProduct"
+  bottom: "Abs5"
+  top: "Dense2"
+  param {
+      lr_mult: 1
+      decay_mult: 1
+  }
+  param {
+      lr_mult: 2
+      decay_mult: 0
+  }
+  inner_product_param {
+      num_output: 10
+      weight_filler {
+          type: "xavier"
+      }
+      bias_filler {
+          type: "constant"
+          value: 0
+      }
+  }
 }

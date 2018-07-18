@@ -10,7 +10,7 @@ layer {
   }
   python_param {
     # the module name -- usually the filename -- that needs to be in $PYTHONPATH
-    module: 'landmark_input_datalayer'
+    module: 'common.landmark_input_datalayer'
     # the layer name -- the class name in the module
     layer: 'ImageInputDataLayer'
     # parameter.
@@ -29,11 +29,11 @@ layer {
   }
   python_param {
     # the module name -- usually the filename -- that needs to be in $PYTHONPATH
-    module: 'landmark_input_datalayer'
+    module: 'common.landmark_input_datalayer'
     # the layer name -- the class name in the module
     layer: 'ImageInputDataLayer'
     # parameter
-    param_str: '{"batch_size":5, "img_size":128, "need_reader":False}'
+    param_str: '{"batch_size":5, "img_size":40, "landmark_type":5, "need_reader":False, "img_format":"RGB"}'
     #param_str: '{"batch_size":128, "img_size":128, "need_reader":False}'
   }
 }

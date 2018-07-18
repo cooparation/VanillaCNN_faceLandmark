@@ -14,7 +14,7 @@ layer {
     # the layer name -- the class name in the module
     layer: 'ImageInputDataLayer'
     # parameter.
-    param_str: '{"batch_size":512, "img_size":128, "need_reader":True,"landmark_type":68,"process_num":20,"buffer2memory":True,"max_angle":10,"img_format":"RGB","max_epoch":1000,"input_paths":"data/image_68p.txt"}'
+    param_str: '{"batch_size":512, "img_size":40, "need_reader":True,"landmark_type":68,"process_num":20,"buffer2memory":True,"max_angle":10,"img_format":"GRAY","max_epoch":1000,"input_paths":"data/image_68p.txt"}'
     #param_str: '{"batch_size":512, "img_size":128, "need_reader":True,"landmark_type":5,"process_num":20,"buffer2memory":True,"max_angle":10,"img_format":"RGB","max_epoch":1000,"input_paths":"data/train_5p.txt"}'
   }
 }
@@ -33,7 +33,7 @@ layer {
     # the layer name -- the class name in the module
     layer: 'ImageInputDataLayer'
     # parameter
-    param_str: '{"batch_size":128, "img_size":128, "need_reader":False}'
+    param_str: '{"batch_size":128, "img_size":40, "need_reader":False, "landmark_type":68, "img_format":"GRAY"}'
     #param_str: '{"batch_size":128, "img_size":128, "need_reader":False}'
   }
 }

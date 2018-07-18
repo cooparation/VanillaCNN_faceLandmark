@@ -42,7 +42,7 @@ class ImageInputDataLayer(caffe.Layer):
         top[1].reshape(
             self.batch_size, self.num_points* 2)
 
-    def preProcessImage(imgs):
+    def preProcessImage(self, imgs):
         """
         process images before feeding to CNNs
         imgs: N x 1 x W x H

@@ -110,7 +110,7 @@ class BatchReader():
         img = img.astype(np.float32)
         m = img.mean()
         s = img.std()
-        img = (img - m) / s
+        img = (img - m) /(1.0e-6 +s)
         return img
 
     def _process(self, idx, sample_list):
