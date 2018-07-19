@@ -17,12 +17,12 @@ def getGitRepFolder():
     return '/home/ly/workspace/Vanilla'
 
 def mse_normlized(groundTruth, pred):
-    delX = groundTruth[78]-groundTruth[84] 
-    delY = groundTruth[79]-groundTruth[85] 
+    delX = groundTruth[78]-groundTruth[84]
+    delY = groundTruth[79]-groundTruth[85]
     interOc = (1e-6+(delX*delX + delY*delY))**0.5  # Euclidain distance
     diff = (pred-groundTruth)**2
-    sumPairs = (diff[0::2]+diff[1::2])**0.5  # Euclidian distance 
-    return (sumPairs / interOc)  # normlized 
+    sumPairs = (diff[0::2]+diff[1::2])**0.5  # Euclidian distance
+    return (sumPairs / interOc)  # normlized
 
 
 
@@ -31,13 +31,13 @@ class RetVal:
     pass  ## A generic class to return multiple values without a need for a dictionary.
 
 def createDataRowsFromCSV(csvFilePath, csvParseFunc, DATA_PATH, limit = sys.maxint):
-    ''' Returns a list of DataRow from CSV files parsed by csvParseFunc, 
+    ''' Returns a list of DataRow from CSV files parsed by csvParseFunc,
         DATA_PATH is the prefix to add to the csv file names,
         limit can be used to parse only partial file rows.
-    ''' 
+    '''
     data = []  # the array we build
-    validObjectsCounter = 0 
-    
+    validObjectsCounter = 0
+
     with open(csvFilePath, 'r') as csvfile:
 
         reader = csv.reader(csvfile, delimiter=' ')
@@ -47,16 +47,16 @@ def createDataRowsFromCSV(csvFilePath, csvParseFunc, DATA_PATH, limit = sys.maxi
                 data.append(d)
                 validObjectsCounter += 1
                 if (validObjectsCounter > limit ):  # Stop if reached to limit
-                    return data 
+                    return data
     return data
 
 def createBoxRowsFromCSV(csvFilePath, DATA_PATH, limit = sys.maxint):
-    ''' Returns a list of DataRow from CSV files parsed by csvParseFunc, 
+    ''' Returns a list of DataRow from CSV files parsed by csvParseFunc,
         DATA_PATH is the prefix to add to the csv file names,
         limit can be used to parse only partial file rows.
-    ''' 
+    '''
     data = []  # the array we build
-    validObjectsCounter = 0 
+    validObjectsCounter = 0
     with open(csvFilePath, 'r') as csvfile:
 
         reader = csv.reader(csvfile, delimiter=' ')
@@ -73,19 +73,19 @@ def createBoxRowsFromCSV(csvFilePath, DATA_PATH, limit = sys.maxint):
                 data.append(box)
                 validObjectsCounter += 1
                 if (validObjectsCounter > limit ):  # Stop if reached to limit
-                    return data 
+                    return data
     return data
 
 def getValidWithBBox(dataRows, boxRows=[]):
-    ''' Returns a list of valid DataRow of a given list of dataRows 
+    ''' Returns a list of valid DataRow of a given list of dataRows
     '''
     import dlib
     import random
     R=RetVal()
-    
-    R.outsideLandmarks = 0 
-    R.noImages = 0 
-    R.noFacesAtAll = 0 
+
+    R.outsideLandmarks = 0
+    R.noImages = 0
+    R.noFacesAtAll = 0
     R.couldNotMatch = 0
     detector=dlib.get_frontal_face_detector()
 
@@ -121,7 +121,7 @@ def getValidWithBBox(dataRows, boxRows=[]):
             #dets = [BBox.BBoxFromLTRB(left, top, right, bot)]
 
 
-        det_bbox = None  # the valid bbox if found 
+        det_bbox = None  # the valid bbox if found
         #print R.couldNotMatch
         for det in dets:
             if not boxRows == []:
@@ -141,7 +141,7 @@ def getValidWithBBox(dataRows, boxRows=[]):
                     # det_bbox.top = det_box.top - height * 0.1
                     # det_bbox.bottom = det_box.bottom + height*0.25
                     # weight = det_box.right - det_box.left
-                    # det_bbox.left = det_box.left - weight*0.15 
+                    # det_bbox.left = det_box.left - weight*0.15
                     # det_bbox.right = det_box.right + weight*0.15
 
                     # center random shift
@@ -161,7 +161,7 @@ def getValidWithBBox(dataRows, boxRows=[]):
                     det_bbox.left = det_box.left - weight*s#0.1
                     det_bbox.right = det_box.right + weight*s#0.1
                     # print "det_bbox:  ",det_bbox.left, det_bbox.top, det_bbox.right, det_bbox.bottom
-                    
+
         if det_bbox is None:
             if len(dets)>0:
                 R.couldNotMatch += 1  # For statistics, dlib found faces but they did not match our landmarks.
@@ -176,22 +176,22 @@ def getValidWithBBox(dataRows, boxRows=[]):
                 #print 'image.shape: ', dataRow.image.shape
                 R.outsideLandmarks += 1  # Saftey check, make sure nothing goes out of bound.
             else:
-                validRow.append(dataRow)  
-    
-    
-    return validRow,R 
-        
+                validRow.append(dataRow)
+
+
+    return validRow,R
+
 def writeHD5(dataRows, outputPath, setTxtFilePATH, meanTrainSet, stdTrainSet , IMAGE_SIZE=60, mirror=False):
     ''' Create HD5 data set for caffe from given valid data rows.
-    if mirror is True, duplicate data by mirroring. 
-    ''' 
+    if mirror is True, duplicate data by mirroring.
+    '''
     from numpy import zeros
     import h5py
-    
+
     if mirror:
         BATCH_SIZE = len(dataRows) *2
     else:
-        BATCH_SIZE = len(dataRows) 
+        BATCH_SIZE = len(dataRows)
 
     #HD5Images = zeros([BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE], dtype='float32')
     HD5Images = zeros([BATCH_SIZE, 1, IMAGE_SIZE, IMAGE_SIZE], dtype='float32')
@@ -199,45 +199,45 @@ def writeHD5(dataRows, outputPath, setTxtFilePATH, meanTrainSet, stdTrainSet , I
     #prefix  = os.path.join(ROOT, 'caffeData', 'hd5', 'train')
     setTxtFile = open(setTxtFilePATH, 'w')
 
-        
-    i = 0 
-    
+
+    i = 0
+
     for dataRowOrig in dataRows:
         if i % 1000 == 0 or i >= BATCH_SIZE-1:
-            print "Processing row %d " % (i+1) 
-            
+            print "Processing row %d " % (i+1)
+
         if not hasattr(dataRowOrig, 'fbbox'):
             print "Warning, no fbbox"
             continue
-        
+
         dataRow = dataRowOrig.copyCroppedByBBox(dataRowOrig.fbbox)  # Get a cropped scale copy of the data row
-        scaledLM = dataRow.landmarksScaledMinus05_plus05() 
+        scaledLM = dataRow.landmarksScaledMinus05_plus05()
         image = dataRow.image.astype('f4')
         #image = (image-meanTrainSet)/(1.e-6 + stdTrainSet)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).reshape(1,IMAGE_SIZE,IMAGE_SIZE)
         m, s = cv2.meanStdDev(image)
         image = (image-m)/(1.e-6 + s)
-        
+
         #HD5Images[i, :] = cv2.split(image)  # split interleaved (40,40,3) to (3,40,40)
         HD5Images[i, :] = image
         HD5Landmarks[i,:] = scaledLM
         i+=1
-        
+
         if mirror:
             dataRow = dataRowOrig.copyCroppedByBBox(dataRowOrig.fbbox).copyMirrored()  # Get a cropped scale copy of the data row
-            scaledLM = dataRow.landmarksScaledMinus05_plus05() 
+            scaledLM = dataRow.landmarksScaledMinus05_plus05()
             image = dataRow.image.astype('f4')
             #image = (image-meanTrainSet)/(1.e-6 + stdTrainSet)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).reshape(1,IMAGE_SIZE,IMAGE_SIZE)
             m, s = cv2.meanStdDev(image)
             image = (image-m)/(1.e-6 + s)
-            
+
             #HD5Images[i, :] = cv2.split(image)  # split interleaved (40,40,3) to (3,40,40)
             HD5Images[i, :] = image
             HD5Landmarks[i,:] = scaledLM
             i+=1
-        
-        
+
+
     with h5py.File(outputPath, 'w') as T:
         T.create_dataset("X", data=HD5Images)
         T.create_dataset("landmarks", data=HD5Landmarks)
@@ -245,11 +245,6 @@ def writeHD5(dataRows, outputPath, setTxtFilePATH, meanTrainSet, stdTrainSet , I
     setTxtFile.write(outputPath+"\n")
     setTxtFile.flush()
     setTxtFile.close()
-    
-    
-    
-  
-
 
 
 class ErrorAcum:  # Used to count error per landmark
@@ -257,16 +252,16 @@ class ErrorAcum:  # Used to count error per landmark
         self.errorPerLandmark = np.zeros(68, dtype ='f4')
         self.itemsCounter = 0
         self.failureCounter = 0
-        
+
     def __repr__(self):
         return '%f mean error, %d items, %d failures  %f precent' % (self.meanError().mean()*100, self.itemsCounter, self.failureCounter, float(self.failureCounter)/self.itemsCounter if self.itemsCounter>0 else 0)
-        
-        
+
+
     def add(self, groundTruth, pred):
         normlized = mse_normlized(groundTruth, pred)
         self.errorPerLandmark += normlized
         self.itemsCounter +=1
-        if normlized.mean() > 0.1: 
+        if normlized.mean() > 0.1:
             # Count error above 10% as failure
             self.failureCounter +=1
 
@@ -280,31 +275,31 @@ class ErrorAcum:  # Used to count error per landmark
         ret = ErrorAcum()
         ret.errorPerLandmark = self.errorPerLandmark + x.errorPerLandmark
         ret.itemsCounter    = self.itemsCounter + x.itemsCounter
-        ret.failureCounter  = self.failureCounter + x.failureCounter        
+        ret.failureCounter  = self.failureCounter + x.failureCounter
         return ret
-        
+
     def plot(self):
         from matplotlib.pylab import show, plot, stem
         pass
 
 
 class BBox:  # Bounding box
-    
+
     @staticmethod
     def BBoxFromLTRB(l, t, r, b):
         return BBox(l, t, r, b)
-    
+
     @staticmethod
     def BBoxFromXYWH_array(xywh):
         return BBox(xywh[0], xywh[1], +xywh[0]+xywh[2], xywh[1]+xywh[3])
-    
+
     @staticmethod
     def BBoxFromXYWH(x,y,w,h):
         return BBox(x,y, x+w, y+h)
-    
+
     def top_left(self):
         return (self.top, self.left)
-    
+
     def left_top(self):
         return (self.left, self.top)
 
@@ -313,21 +308,21 @@ class BBox:  # Bounding box
 
     def right_bottom(self):
         return (self.right, self.bottom)
-    
+
     def right_top(self):
         return (self.right, self.top)
-    
+
     def relaxed(self, clip ,relax=3):  #@Unused
         from numpy import array
         _A = array
         maxWidth, maxHeight =  clip[0], clip[1]
-        
-        nw, nh = self.size()*(1+relax)*.5       
+
+        nw, nh = self.size()*(1+relax)*.5
         center = self.center()
         offset=_A([nw,nh])
         lefttop = center - offset
-        rightbot= center + offset 
-         
+        rightbot= center + offset
+
         self.left, self.top  = int( max( 0, lefttop[0] ) ), int( max( 0, lefttop[1]) )
         self.right, self.bottom = int( min( rightbot[0], maxWidth ) ), int( min( rightbot[1], maxHeight ) )
         return self
@@ -337,43 +332,43 @@ class BBox:  # Bounding box
         self.top = max(self.top, 0)
         self.right = min(self.right, maxRight)
         self.bottom = min(self.bottom, maxBottom)
-        
+
     def size(self):
         from numpy import  array
         return array([self.width(), self.height()])
-     
+
     def center(self):
         from numpy import  array
         return array([(self.left+self.right)/2, (self.top+self.bottom)/2])
-                
+
     def __init__(self,left=0, top=0, right=0, bottom=0, path=''):
         self.left = left
         self.top = top
         self.right = right
         self.bottom = bottom
         self.path = path
-        
+
     def width(self):
         return self.right - self.left
-        
+
     def height(self):
         return self.bottom - self.top
-        
+
     def xywh(self):
         return self.left, self.top, self.width(), self.height()
-        
+
     def offset(self, x, y):
-        self.left += x 
+        self.left += x
         self.right += x
-        self.top += y 
+        self.top += y
         self.bottom += y
-         
+
     def scale(self, rx, ry):
-        self.left *= rx 
+        self.left *= rx
         self.right *= rx
-        self.top *= ry 
+        self.top *= ry
         self.bottom *= ry
-                        
+
     def __repr__(self):
         return 'left(%.1f), top(%.1f), right(%.1f), bottom(%.1f) w(%d) h(%d)' % (self.left, self.top, self.right, self.bottom,self.width(), self.height())
 
@@ -389,9 +384,9 @@ class BBox:  # Bounding box
 class DataRow:
     global TrainSetMean
     global TrainSetSTD
-    
+
     IMAGE_SIZE = 60
-    def __init__(self, path='', p1=(0, 0, ), p2=(0, 0), p3=(0, 0), p4=(0, 0), p5=(0, 0),p6=(0, 0, ), p7=(0, 0), p8=(0, 0), p9=(0, 0), p10=(0, 0), 
+    def __init__(self, path='', p1=(0, 0, ), p2=(0, 0), p3=(0, 0), p4=(0, 0), p5=(0, 0),p6=(0, 0, ), p7=(0, 0), p8=(0, 0), p9=(0, 0), p10=(0, 0),
 p11=(0, 0, ), p12=(0, 0), p13=(0, 0), p14=(0, 0), p15=(0, 0),p16=(0, 0, ), p17=(0, 0), p18=(0, 0), p19=(0, 0), p20=(0, 0),
 p21=(0, 0, ), p22=(0, 0), p23=(0, 0), p24=(0, 0), p25=(0, 0),p26=(0, 0, ), p27=(0, 0), p28=(0, 0), p29=(0, 0), p30=(0, 0),
 p31=(0, 0, ), p32=(0, 0), p33=(0, 0), p34=(0, 0), p35=(0, 0),p36=(0, 0, ), p37=(0, 0), p38=(0, 0), p39=(0, 0), p40=(0, 0),
@@ -581,7 +576,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         self.p37 = landMarks[72:74]
         self.p38 = landMarks[74:76]
         self.p39 = landMarks[76:78]
-        self.p40 = landMarks[78:80]        
+        self.p40 = landMarks[78:80]
         self.p41 = landMarks[80:82]
         self.p42 = landMarks[82:84]
         self.p43 = landMarks[84:86]
@@ -609,7 +604,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         self.p65 = landMarks[128:130]
         self.p66 = landMarks[130:132]
         self.p67 = landMarks[132:134]
-        self.p68 = landMarks[134:136]       
+        self.p68 = landMarks[134:136]
     def landmarks(self):
         # return numpy float array with ordered values
         stright = [
@@ -688,7 +683,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         # return numpy float array with ordered values
         #return self.landmarks().astype('f4')/40. - 0.5
         return self.landmarks().astype('f4')/60.
-        
+
     def scale(self, sx, sy):
         self.sx *= sx
         self.sy *= sy
@@ -762,7 +757,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         self.p67 = (self.p67[0]*sx, self.p67[1]*sy)
         self.p68 = (self.p68[0]*sx, self.p68[1]*sy)
 
-        
+
         if hasattr(self, 'prediction'):
             self.prediction = self.prediction.reshape(-1, 2)*[sx, sy]
 
@@ -852,14 +847,14 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
     def inverseScaleAndOffset(self, landmarks):
         """ computes the inverse scale and offset of input data according to the inverse scale factor and inverse offset factor
         """
-        from numpy import array; _A = array ; # Shothand 
-        
+        from numpy import array; _A = array ; # Shothand
+
         ret = _A(landmarks.reshape(-1,2)) *_A([1./self.sx, 1./self.sy])
         ret += _A([-self.offsetX, -self.offsetY])
         return ret
 
     @staticmethod
-    def DataRowFromNameBoxInterlaved(row, root=''):  # lfw_5590 + net_7876 (interleaved) 
+    def DataRowFromNameBoxInterlaved(row, root=''):  # lfw_5590 + net_7876 (interleaved)
         '''
         name , bounding box(w,h), left eye (x,y) ,right eye (x,y)..nose..left mouth,..right mouth
         '''
@@ -890,7 +885,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         d.p17 = (float(row[33]), float(row[34]))
         d.p18 = (float(row[35]), float(row[36]))
         d.p19 = (float(row[37]), float(row[38]))
-        d.p20 = (float(row[39]), float(row[40])) 
+        d.p20 = (float(row[39]), float(row[40]))
         d.p21 = (float(row[41]), float(row[42]))
         d.p22 = (float(row[43]), float(row[44]))
         d.p23 = (float(row[45]), float(row[46]))
@@ -900,7 +895,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         d.p27 = (float(row[53]), float(row[54]))
         d.p28 = (float(row[55]), float(row[56]))
         d.p29 = (float(row[57]), float(row[58]))
-        d.p30 = (float(row[59]), float(row[60])) 
+        d.p30 = (float(row[59]), float(row[60]))
         d.p31 = (float(row[61]), float(row[62]))
         d.p32 = (float(row[63]), float(row[64]))
         d.p33 = (float(row[65]), float(row[66]))
@@ -910,7 +905,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         d.p37 = (float(row[73]), float(row[74]))
         d.p38 = (float(row[75]), float(row[76]))
         d.p39 = (float(row[77]), float(row[78]))
-        d.p40 = (float(row[79]), float(row[80])) 
+        d.p40 = (float(row[79]), float(row[80]))
         d.p41 = (float(row[81]), float(row[82]))
         d.p42 = (float(row[83]), float(row[84]))
         d.p43 = (float(row[85]), float(row[86]))
@@ -951,19 +946,19 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         if len(row[0]) <= 1:
             # bug in the files, it has spaces seperating them, skip it
             row=row[1:]
-            
+
         if len(row)<10:
             print 'error parsing ', row
             return None
-        
+
         d.path = os.path.join(root, row[0]).replace("\\", "/")
         d.name = os.path.split(d.path)[-1]
         d.image = cv2.imread(d.path)
-        
+
         if d.image is None:
             print 'Error reading image', d.path
             return None
-        
+
         d.p1 = (float(row[1]), float(row[2]))
         d.p2 = (float(row[3]), float(row[4]))
         d.p3 = (float(row[5]), float(row[6]))
@@ -983,7 +978,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         d.p17 = (float(row[33]), float(row[34]))
         d.p18 = (float(row[35]), float(row[36]))
         d.p19 = (float(row[37]), float(row[38]))
-        d.p20 = (float(row[39]), float(row[40])) 
+        d.p20 = (float(row[39]), float(row[40]))
         d.p21 = (float(row[41]), float(row[42]))
         d.p22 = (float(row[43]), float(row[44]))
         d.p23 = (float(row[45]), float(row[46]))
@@ -993,7 +988,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         d.p27 = (float(row[53]), float(row[54]))
         d.p28 = (float(row[55]), float(row[56]))
         d.p29 = (float(row[57]), float(row[58]))
-        d.p30 = (float(row[59]), float(row[60])) 
+        d.p30 = (float(row[59]), float(row[60]))
         d.p31 = (float(row[61]), float(row[62]))
         d.p32 = (float(row[63]), float(row[64]))
         d.p33 = (float(row[65]), float(row[66]))
@@ -1003,7 +998,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         d.p37 = (float(row[73]), float(row[74]))
         d.p38 = (float(row[75]), float(row[76]))
         d.p39 = (float(row[77]), float(row[78]))
-        d.p40 = (float(row[79]), float(row[80])) 
+        d.p40 = (float(row[79]), float(row[80]))
         d.p41 = (float(row[81]), float(row[82]))
         d.p42 = (float(row[83]), float(row[84]))
         d.p43 = (float(row[85]), float(row[86]))
@@ -1033,7 +1028,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         d.p67 = (float(row[133]), float(row[134]))
         d.p68 = (float(row[135]), float(row[136]))
 
-  
+
 
         return d
 
@@ -1065,9 +1060,9 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
 
     @staticmethod
     def DataRowFromPrediction(p, path='', image=None):
-        d = DataRow(path)        
+        d = DataRow(path)
         p = (p+0.5)*60.  # scale from -0.5..+0.5 to 0..40
-        
+
         d.p1 = (p[0], p[1])
         d.p2 = (p[2], p[3])
         d.p3 = (p[4], p[5])
@@ -1080,7 +1075,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         M = self.image
         if hasattr(self, 'prediction'):
             for x,y in self.prediction.reshape(-1,2):
-                cv2.circle(M, (int(x), int(y)), r, (0,200,0), -1)            
+                cv2.circle(M, (int(x), int(y)), r, (0,200,0), -1)
 
         cv2.circle(M, (int(self.p1[0]), int(self.p1[1])), r, color, -1)
         cv2.circle(M, (int(self.p2[0]), int(self.p2[1])), r, color, -1)
@@ -1121,7 +1116,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
             weight = (det_box.right - det_box.left)/1.2
             det_bbox.left = det_box.left + weight*0.1
             det_bbox.right = det_box.right - weight*0.1
-            
+
             cv2.rectangle(M, (int(det_bbox.left), int(det_bbox.top)), (int(det_bbox.right), int(det_bbox.bottom)), (0,200,0), 2)
         return M
 
@@ -1133,7 +1128,7 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         #cv2.imshow(title, M)
 
         return M
-        
+
     def makeInt(self):
         self.p1 = (int(self.p1[0]), int(self.p1[1]))
         self.p2 = (int(self.p2[0]), int(self.p2[1]))
@@ -1204,107 +1199,107 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
         self.p67 = (int(self.p67[0]), int(self.p67[1]))
         self.p68 = (int(self.p68[0]), int(self.p68[1]))
 
-        return self        
-         
+        return self
+
     def copyCroppedByBBox(self,fbbox, siz=np.array([60.,60.])):
         """
         @ fbbox : BBox
         Returns a copy with cropped, scaled to size
-        """        
+        """
         fbbox.makeInt() # assume BBox class
         if fbbox.width()<10 or fbbox.height()<10:
             print "Invalid bbox size:",fbbox
             return None
         #print "fbbox: ", fbbox
         faceOnly = self.image[fbbox.top : fbbox.bottom, fbbox.left:fbbox.right, :]
-        scaled = DataRow() 
-        scaled.image = cv2.resize(faceOnly, (int(siz[0]), int(siz[1])))                
-        scaled.setLandmarks(self.landmarks())        
+        scaled = DataRow()
+        scaled.image = cv2.resize(faceOnly, (int(siz[0]), int(siz[1])))
+        scaled.setLandmarks(self.landmarks())
         """ @scaled: DataRow """
         scaled.offsetCropped(fbbox.left_top()) # offset the landmarks
         ry, rx = siz/faceOnly.shape[:2]
         scaled.scale(rx, ry)
-        
-        return scaled        
-        
+
+        return scaled
+
     def copyMirrored(self):
         '''
         Return a copy with mirrored data (and mirrored landmarks).
         '''
         import numpy
         _A=numpy.array
-        ret = DataRow() 
+        ret = DataRow()
         ret.image=cv2.flip(self.image.copy(),1)
         # Now we mirror the landmarks and swap left and right
-        width = ret.image.shape[0] 
+        width = ret.image.shape[0]
         ret.p1 = _A([width-self.p17[0], self.p17[1]]) # Toggle left\right eyes position and mirror x axis only
         ret.p2 = _A([width-self.p16[0], self.p16[1]])
-        ret.p3 = _A([width-self.p15[0], self.p15[1]])        
+        ret.p3 = _A([width-self.p15[0], self.p15[1]])
         ret.p4 = _A([width-self.p14[0], self.p14[1]]) # Toggle mouth positions and mirror x axis only
         ret.p5 = _A([width-self.p13[0], self.p13[1]])
         ret.p6 = _A([width-self.p12[0], self.p12[1]])
         ret.p7 = _A([width-self.p11[0], self.p11[1]])
-        ret.p8 = _A([width-self.p10[0], self.p10[1]])        
+        ret.p8 = _A([width-self.p10[0], self.p10[1]])
         ret.p9 = _A([width-self.p9[0], self.p9[1]])
         ret.p10 = _A([width-self.p8[0], self.p8[1]])
         ret.p11 = _A([width-self.p7[0], self.p7[1]]) # Toggle left\right eyes position and mirror x axis only
         ret.p12 = _A([width-self.p6[0], self.p6[1]])
-        ret.p13 = _A([width-self.p5[0], self.p5[1]])        
+        ret.p13 = _A([width-self.p5[0], self.p5[1]])
         ret.p14 = _A([width-self.p4[0], self.p4[1]]) # Toggle mouth positions and mirror x axis only
         ret.p15 = _A([width-self.p3[0], self.p3[1]])
         ret.p16 = _A([width-self.p2[0], self.p2[1]])
         ret.p17 = _A([width-self.p1[0], self.p1[1]])
-        ret.p18 = _A([width-self.p27[0], self.p27[1]])        
+        ret.p18 = _A([width-self.p27[0], self.p27[1]])
         ret.p19 = _A([width-self.p26[0], self.p26[1]])
         ret.p20 = _A([width-self.p25[0], self.p25[1]])
         ret.p21 = _A([width-self.p24[0], self.p24[1]])
         ret.p22 = _A([width-self.p23[0], self.p23[1]])
-        ret.p23 = _A([width-self.p22[0], self.p22[1]])        
+        ret.p23 = _A([width-self.p22[0], self.p22[1]])
         ret.p24 = _A([width-self.p21[0], self.p21[1]])
         ret.p25 = _A([width-self.p20[0], self.p20[1]])
         ret.p26 = _A([width-self.p19[0], self.p19[1]])
         ret.p27 = _A([width-self.p18[0], self.p18[1]])
-        ret.p28 = _A([width-self.p28[0], self.p28[1]])        
+        ret.p28 = _A([width-self.p28[0], self.p28[1]])
         ret.p29 = _A([width-self.p29[0], self.p29[1]])
         ret.p30 = _A([width-self.p30[0], self.p30[1]])
         ret.p31 = _A([width-self.p31[0], self.p31[1]]) # Toggle left\right eyes position and mirror x axis only
         ret.p32 = _A([width-self.p36[0], self.p36[1]])
-        ret.p33 = _A([width-self.p35[0], self.p35[1]])        
+        ret.p33 = _A([width-self.p35[0], self.p35[1]])
         ret.p34 = _A([width-self.p34[0], self.p34[1]]) # Toggle mouth positions and mirror x axis only
         ret.p35 = _A([width-self.p33[0], self.p33[1]])
         ret.p36 = _A([width-self.p32[0], self.p32[1]])
         ret.p37 = _A([width-self.p46[0], self.p46[1]])
-        ret.p38 = _A([width-self.p45[0], self.p45[1]])        
+        ret.p38 = _A([width-self.p45[0], self.p45[1]])
         ret.p39 = _A([width-self.p44[0], self.p44[1]])
         ret.p40 = _A([width-self.p43[0], self.p43[1]])
         ret.p41 = _A([width-self.p48[0], self.p48[1]]) # Toggle left\right eyes position and mirror x axis only
         ret.p42 = _A([width-self.p47[0], self.p47[1]])
-        ret.p43 = _A([width-self.p40[0], self.p40[1]])        
+        ret.p43 = _A([width-self.p40[0], self.p40[1]])
         ret.p44 = _A([width-self.p39[0], self.p39[1]]) # Toggle mouth positions and mirror x axis only
         ret.p45 = _A([width-self.p38[0], self.p38[1]])
         ret.p46 = _A([width-self.p37[0], self.p37[1]])
         ret.p47 = _A([width-self.p42[0], self.p42[1]])
-        ret.p48 = _A([width-self.p41[0], self.p41[1]])        
+        ret.p48 = _A([width-self.p41[0], self.p41[1]])
         ret.p49 = _A([width-self.p55[0], self.p55[1]])
         ret.p50 = _A([width-self.p54[0], self.p54[1]])
         ret.p51 = _A([width-self.p53[0], self.p53[1]]) # Toggle left\right eyes position and mirror x axis only
         ret.p52 = _A([width-self.p52[0], self.p52[1]])
-        ret.p53 = _A([width-self.p51[0], self.p51[1]])        
+        ret.p53 = _A([width-self.p51[0], self.p51[1]])
         ret.p54 = _A([width-self.p50[0], self.p50[1]]) # Toggle mouth positions and mirror x axis only
         ret.p55 = _A([width-self.p49[0], self.p49[1]])
         ret.p56 = _A([width-self.p60[0], self.p60[1]])
         ret.p57 = _A([width-self.p59[0], self.p59[1]])
-        ret.p58 = _A([width-self.p58[0], self.p58[1]])        
+        ret.p58 = _A([width-self.p58[0], self.p58[1]])
         ret.p59 = _A([width-self.p57[0], self.p57[1]])
         ret.p60 = _A([width-self.p56[0], self.p56[1]])
         ret.p61 = _A([width-self.p65[0], self.p65[1]]) # Toggle left\right eyes position and mirror x axis only
         ret.p62 = _A([width-self.p64[0], self.p64[1]])
-        ret.p63 = _A([width-self.p63[0], self.p63[1]])        
+        ret.p63 = _A([width-self.p63[0], self.p63[1]])
         ret.p64 = _A([width-self.p62[0], self.p62[1]]) # Toggle mouth positions and mirror x axis only
         ret.p65 = _A([width-self.p61[0], self.p61[1]])
         ret.p66 = _A([width-self.p68[0], self.p68[1]])
         ret.p67 = _A([width-self.p67[0], self.p67[1]])
-        ret.p68 = _A([width-self.p66[0], self.p66[1]])        
+        ret.p68 = _A([width-self.p66[0], self.p66[1]])
 
         return ret
 
@@ -1318,13 +1313,13 @@ p61=(0, 0, ), p62=(0, 0), p63=(0, 0), p64=(0, 0), p65=(0, 0),p66=(0, 0, ), p67=(
                      middle = (131.25, 127.25),
                      leftMouth = (106.25, 155.25),
                      rightMouth =(142.75,155.25)
-                     )    
-        
-  
-            
+                     )
+
+
+
 class Predictor:
-    ROOT = getGitRepFolder() 
-    
+    ROOT = getGitRepFolder()
+
     def preprocess(self, resized, landmarks):
         #ret = resized.astype('f4')
         #ret -= self.mean
@@ -1334,16 +1329,16 @@ class Predictor:
         m, s = cv2.meanStdDev(grayImg)
         grayImg = (grayImg-m)/(1.e-6 + s)
         return  grayImg, landmarks/60.
-    
+
     def predict(self, resized):
         """
-        @resized: image 40,40 already pre processed 
-        """         
+        @resized: image 40,40 already pre processed
+        """
         #self.net.blobs['data'].data[...] = cv2.split(resized)
         self.net.blobs['data'].data[...] = resized.reshape(1,1,60,60)
         prediction = self.net.forward()['Dense3'][0]
         return prediction
-        
+
     def __init__(self, protoTXTPath, weightsPath):
         import caffe
         caffe.set_mode_cpu()
@@ -1353,4 +1348,4 @@ class Predictor:
         self.std  = cv2.imread(os.path.join(Predictor.ROOT,'trainSTD.png')).astype('float')
         self.std = cv2.resize(self.std, (60,60), interpolation=cv2.INTER_CUBIC)
 
-    
+

@@ -33,11 +33,11 @@ for idx, im_path in enumerate(os.listdir(img_folder)):
     im = cv2.resize(im, net.blobs['data'].data.shape[2:])
     im_ = np.transpose(im, (2, 0, 1))
     im_ = im_.astype(np.float32)
-    #im_ = im_/127.5-1.0
+    im_ = im_/127.5-1.0
 
-    mv = im_.mean()
-    sv = im_.std()
-    im_ = (im_ - mv)/(1.0e-6 + sv)
+    #mv = im_.mean()
+    #sv = im_.std()
+    #im_ = (im_ - mv)/(1.0e-6 + sv)
 
     #meanTrainSet = cv2.imread(os.path.join(root, 'trainMean.png')).astype('f4')
     #stdTrainSet = cv2.imread(os.path.join(root, 'trainSTD.png')).astype('f4')

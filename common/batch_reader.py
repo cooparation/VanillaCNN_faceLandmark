@@ -23,6 +23,7 @@ class BatchReader():
     def __init__(self, **kwargs):
         # param
         self._kwargs = kwargs
+        self._status = kwargs['status']
         self._batch_size = kwargs['batch_size']
         self._process_num = kwargs['process_num']
         # total lsit
@@ -100,10 +101,8 @@ class BatchReader():
             p = Process(target=self._process, args=(idx, self._sample_list[offset: offset+num_per_process]))
             p.start()
             self._process_list.append(p)
-        #p = Process(target=self._process, args=(0, self._sample_list[0: self._total_sample]))
-        #p.start()
-        #self._process_list.append(p)
-    def preProcessImage(img):
+
+    def preProcessImage(self, img):
         """
         preprocess: image normalization
         """
@@ -118,7 +117,7 @@ class BatchReader():
         # read all image to memory to speed up!
         if self._kwargs['buffer2memory']:
             print ("[Process %d] Start to read image to memory! Count=%d"%(idx, len(sample_list)))
-            sample_list = __landmark_augment.mini_crop_by_landmarks(sample_list, 4.5, self._kwargs['img_format'])
+            sample_list = __landmark_augment.mini_crop_by_landmarks(sample_list, 3.5, self._kwargs['img_format'])
             print ("[Process %d] Read all image to memory finish!"%(idx))
         sample_cnt = 0 # count for one batch
         image_list, landmarks_list = [], [] # one batch list
@@ -135,22 +134,32 @@ class BatchReader():
                     image = cv2.imdecode(sample[0], cv2.IMREAD_COLOR)
                     #image = cv2.imdecode(sample[0], cv2.CV_LOAD_IMAGE_COLOR)
                 landmarks = sample[1].copy()# keep deep copy
-                scale_range = (2.7, 3.3)
-                image_new, landmarks_new = __landmark_augment.augment(image, landmarks, self._kwargs['img_size'],
-                                            self._kwargs['max_angle'], scale_range)
-                #cv2.imwrite("./output_tmp/tmp%d.jpg"%(sample_cnt), image_new)
+
+                if self._status == 'TRAIN':
+                    scale_range = (2.7, 3.3)
+                    image_new, landmarks_new = __landmark_augment.augment(image, landmarks, self._kwargs['img_size'],
+                                                self._kwargs['max_angle'], scale_range)
+                    #cv2.imwrite("./output_tmp/tmp%d.jpg"%(sample_cnt), image_new)
+                elif self._status == 'TEST':
+                    ori_h, ori_w = image.shape[:2]
+                    # make landmark -> [0,1]
+                    landmarks = (1.0*landmarks) / (ori_w, ori_h)
+                    landmarks_new = landmarks.flatten()
+                    new_w = self._kwargs['img_size']
+                    new_h = self._kwargs['img_size']
+                    image_new = cv2.resize(image, (new_w, new_h))
 
                 # caffe data format whc->chw
                 im_ = np.transpose(image_new, (2, 0, 1))
-                #preProcessImage(im_)
-                im_ = im_.astype(np.float32)
+                self.preProcessImage(im_)
+                #im_ = im_.astype(np.float32)
                 #im_ = im_/127.5-1.0
 
                 # sent a batch
-                sample_cnt += 1
-                image_list.append(im_)
                 #image_list.append(image_new) # open to check the image
+                image_list.append(im_)
 
+                sample_cnt += 1
                 landmarks_list.append(landmarks_new)
                 if sample_cnt >= self._kwargs['batch_size']:
                     self._output_queue[idx].put((np.array(image_list), np.array(landmarks_list)))
@@ -173,7 +182,8 @@ class BatchReader():
 if __name__ == '__main__':
     kwargs = {
         'input_paths': "data/try.txt",
-        'landmark_type': 68,
+        'status':"TEST",
+        'landmark_type': 5,
         'batch_size': 10,
         'process_num': 30,
         'img_format': 'RGB',
@@ -184,7 +194,7 @@ if __name__ == '__main__':
     }
     b = BatchReader(**kwargs)
     g = b.batch_generator()
-    output_folder = "output_tmp/"
+    output_folder = "output_tmp"
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     import time
@@ -196,14 +206,16 @@ if __name__ == '__main__':
         start_time = end_time
         batch_image, batch_landmarks = g.next()
 
-        for idx, (image, landmarks) in enumerate(zip(batch_image, batch_landmarks)):
-           if idx > 20: # only see first 10
-               break
-           landmarks = landmarks.reshape([-1, 2])
-           for l in landmarks:
-               ii = tuple(l * (kwargs['img_size'], kwargs['img_size']))
-               cv2.circle(image, (int(ii[0]), int(ii[1])), 2, (0,255,0), -1)
-           print "image channels", image.shape[0], image.shape[1], image.shape[2]
-           cv2.imwrite("%s/%d.jpg"%(output_folder, idx), image)
+        #for idx, (image, landmarks) in enumerate(zip(batch_image, batch_landmarks)):
+        #   if idx > 20: # only see first 10
+        #       break
+        #   landmarks = landmarks.reshape([-1, 2])
+        #   for l in landmarks:
+        #       print 'get landmark', l
+        #       ii = tuple(l * (kwargs['img_size'], kwargs['img_size']))
+        #       cv2.circle(image, (int(ii[0]), int(ii[1])), 2, (0,255,0), -1)
+        #   print "image channels", image.shape[0], image.shape[1], image.shape[2]
+        #   cv2.imwrite("%s/%d.jpg"%(output_folder, idx), image)
+        #   print ("write to %s/%d.jpg"%(output_folder, idx))
     print ("Done...Press ctrl+c to exit me")
 

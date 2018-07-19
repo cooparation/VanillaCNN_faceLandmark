@@ -14,7 +14,7 @@ with open( './data/test.txt', 'r' ) as T :
      label_ = np.zeros( (len(lines), NUM_POINTS), dtype='f4' )
 
 for i,l in enumerate(lines):
-     sp = l.split(' ')
+     sp = l.strip().split()
      img = caffe.io.load_image(sp[0] )
      height,width =  img.shape[0],img.shape[1]
      print height, width

@@ -60,7 +60,6 @@ class ImageInputDataLayer(caffe.Layer):
         """
         images, labels = self.batch_generator.next()
         #print 'liusanjun images num', len(images)
-        self.preProcessImage(images)
         top[0].data[...] = images
         top[1].data[...] = labels
 
