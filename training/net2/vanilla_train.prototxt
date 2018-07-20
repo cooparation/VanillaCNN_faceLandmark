@@ -14,7 +14,7 @@ layer {
     # the layer name -- the class name in the module
     layer: 'ImageInputDataLayer'
     # parameter.
-    param_str: '{"batch_size":512, "img_size":40, "need_reader":True,"landmark_type":5,"process_num":20,"buffer2memory":True,"max_angle":10,"img_format":"RGB","max_epoch":1000,"input_paths":"data/celeba_5p.txt"}'
+    param_str: '{"status":"TRAIN","batch_size":512, "img_size":40, "need_reader":True,"landmark_type":5,"process_num":20,"buffer2memory":True,"max_angle":10,"img_format":"RGB","max_epoch":1000,"input_paths":"data/celeba_5p.txt"}'
     #param_str: '{"batch_size":512, "img_size":128, "need_reader":True,"landmark_type":5,"process_num":20,"buffer2memory":True,"max_angle":10,"img_format":"RGB","max_epoch":1000,"input_paths":"data/train_5p.txt"}'
   }
 }
@@ -33,7 +33,7 @@ layer {
     # the layer name -- the class name in the module
     layer: 'ImageInputDataLayer'
     # parameter
-    param_str: '{"batch_size":5, "img_size":40, "landmark_type":5, "need_reader":False, "img_format":"RGB"}'
+    param_str: '{"status":"TEST","batch_size":100,"img_size":40,"need_reader":True,"landmark_type":5,"process_num":10,"buffer2memory":True, "img_format":"RGB","max_epoch":1000,"input_paths":"data/celeba_5p_test.txt"}'
     #param_str: '{"batch_size":128, "img_size":128, "need_reader":False}'
   }
 }
@@ -326,5 +326,18 @@ layer {
 	bottom: "Dense2"
 	bottom: "landmarks"
 	top: "loss"
+    include{
+        phase: TRAIN
+    }
+}
+layer {
+    name: "error"
+    type: "EuclideanLoss"
+    bottom: "Dense2"
+    bottom: "landmarks"
+    top: "error"
+    include {
+        phase: TEST
+    }
 }
 
