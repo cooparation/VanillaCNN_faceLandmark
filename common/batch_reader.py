@@ -117,7 +117,8 @@ class BatchReader():
         # read all image to memory to speed up!
         if self._kwargs['buffer2memory']:
             print ("[Process %d] Start to read image to memory! Count=%d"%(idx, len(sample_list)))
-            sample_list = __landmark_augment.mini_crop_by_landmarks(sample_list, 3.5, self._kwargs['img_format'])
+            scale_value = 2.0 #3.5
+            sample_list = __landmark_augment.mini_crop_by_landmarks(sample_list, scale_value, self._kwargs['img_format'])
             print ("[Process %d] Read all image to memory finish!"%(idx))
         sample_cnt = 0 # count for one batch
         image_list, landmarks_list = [], [] # one batch list
@@ -148,6 +149,8 @@ class BatchReader():
                     new_w = self._kwargs['img_size']
                     new_h = self._kwargs['img_size']
                     image_new = cv2.resize(image, (new_w, new_h))
+                else:
+                    print "error the data status not setting"
 
                 # caffe data format whc->chw
                 im_ = np.transpose(image_new, (2, 0, 1))
@@ -206,16 +209,17 @@ if __name__ == '__main__':
         start_time = end_time
         batch_image, batch_landmarks = g.next()
 
-        #for idx, (image, landmarks) in enumerate(zip(batch_image, batch_landmarks)):
-        #   if idx > 20: # only see first 10
-        #       break
-        #   landmarks = landmarks.reshape([-1, 2])
-        #   for l in landmarks:
-        #       print 'get landmark', l
-        #       ii = tuple(l * (kwargs['img_size'], kwargs['img_size']))
-        #       cv2.circle(image, (int(ii[0]), int(ii[1])), 2, (0,255,0), -1)
-        #   print "image channels", image.shape[0], image.shape[1], image.shape[2]
-        #   cv2.imwrite("%s/%d.jpg"%(output_folder, idx), image)
-        #   print ("write to %s/%d.jpg"%(output_folder, idx))
+        for idx, (image, landmarks) in enumerate(zip(batch_image, batch_landmarks)):
+           if idx > 20: # only see first 10
+               break
+           landmarks = landmarks.reshape([-1, 2])
+           for l in landmarks:
+               print 'get landmark', l
+               ii = tuple(l * (kwargs['img_size'], kwargs['img_size']))
+               cv2.circle(image, (int(ii[0]), int(ii[1])), 2, (0,255,0), -1)
+           print "image channels", image.shape[0], image.shape[1], image.shape[2]
+           cv2.imwrite("%s/%d.jpg"%(output_folder, idx), image)
+           print ("write to %s/%d.jpg"%(output_folder, idx))
     print ("Done...Press ctrl+c to exit me")
+    sys.exit()
 

@@ -140,6 +140,7 @@ class LandmarkAugment(object):
             scale = scale_range
         else:
             scale = np.random.randint(int(scale_range[0]*100.0), int(scale_range[1]*100.0)) / 100.0
+        #print '--- scale --- ', scale
         new_size = int(max(w, h) * scale)
         if shift_rate >= 0.5:
             x1 = x - (new_size - w) / 2

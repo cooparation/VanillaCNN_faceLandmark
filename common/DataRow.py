@@ -14,7 +14,8 @@ import time
 def getGitRepFolder():
 #    import subprocess
 #    return subprocess.Popen(['git', 'rev-parse', '--show-toplevel'], stdout=subprocess.PIPE).communicate()[0].rstrip()
-    return '/home/ly/workspace/Vanilla'
+    #return '/home/ly/workspace/Vanilla'
+    return '/home/liusj/dl/VanillaCNN_faceLandmark'
 
 def mse_normlized(groundTruth, pred):
     delX = groundTruth[78]-groundTruth[84]
@@ -81,13 +82,13 @@ def getValidWithBBox(dataRows, boxRows=[]):
     '''
     import dlib
     import random
-    R=RetVal()
+    R = RetVal()
 
     R.outsideLandmarks = 0
     R.noImages = 0
     R.noFacesAtAll = 0
     R.couldNotMatch = 0
-    detector=dlib.get_frontal_face_detector()
+    detector = dlib.get_frontal_face_detector()
 
     validRow=[]
     for rowIdx, dataRow in enumerate(dataRows):
@@ -385,7 +386,7 @@ class DataRow:
     global TrainSetMean
     global TrainSetSTD
 
-    IMAGE_SIZE = 60
+    IMAGE_SIZE = 60 # TODO
     def __init__(self, path='', p1=(0, 0, ), p2=(0, 0), p3=(0, 0), p4=(0, 0), p5=(0, 0),p6=(0, 0, ), p7=(0, 0), p8=(0, 0), p9=(0, 0), p10=(0, 0),
 p11=(0, 0, ), p12=(0, 0), p13=(0, 0), p14=(0, 0), p15=(0, 0),p16=(0, 0, ), p17=(0, 0), p18=(0, 0), p19=(0, 0), p20=(0, 0),
 p21=(0, 0, ), p22=(0, 0), p23=(0, 0), p24=(0, 0), p25=(0, 0),p26=(0, 0, ), p27=(0, 0), p28=(0, 0), p29=(0, 0), p30=(0, 0),
