@@ -111,7 +111,7 @@ class LandmarkAugment(object):
             No
         '''
         (x1, y1, x2, y2), new_size, need_pad, (p_x, p_y, p_w, p_h) = self.get_bbox_of_landmarks(
-            image, landmarks, scale_range, shift_rate=0.3)
+            image, landmarks, scale_range, 0.1) #shift_rate=0.3)
         box_image = image[y1:y2, x1:x2]
         if need_pad:
             box_image = np.lib.pad(box_image, ((p_y, p_h), (p_x, p_w), (0,0)), 'constant')

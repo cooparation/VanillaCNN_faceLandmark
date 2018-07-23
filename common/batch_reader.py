@@ -117,7 +117,7 @@ class BatchReader():
         # read all image to memory to speed up!
         if self._kwargs['buffer2memory']:
             print ("[Process %d] Start to read image to memory! Count=%d"%(idx, len(sample_list)))
-            scale_value = 2.0 #3.5
+            scale_value = 2.5 #3.5
             sample_list = __landmark_augment.mini_crop_by_landmarks(sample_list, scale_value, self._kwargs['img_format'])
             print ("[Process %d] Read all image to memory finish!"%(idx))
         sample_cnt = 0 # count for one batch
@@ -137,7 +137,8 @@ class BatchReader():
                 landmarks = sample[1].copy()# keep deep copy
 
                 if self._status == 'TRAIN':
-                    scale_range = (2.7, 3.3)
+                    #scale_range = (2.7, 3.3)
+                    scale_range = (1.5, 2.3)
                     image_new, landmarks_new = __landmark_augment.augment(image, landmarks, self._kwargs['img_size'],
                                                 self._kwargs['max_angle'], scale_range)
                     #cv2.imwrite("./output_tmp/tmp%d.jpg"%(sample_cnt), image_new)
@@ -158,7 +159,7 @@ class BatchReader():
                 #im_ = im_.astype(np.float32)
                 #im_ = im_/127.5-1.0
 
-                # sent a batch
+                # sent a batch -- check image
                 #image_list.append(image_new) # open to check the image
                 image_list.append(im_)
 
@@ -190,8 +191,8 @@ if __name__ == '__main__':
         'batch_size': 10,
         'process_num': 30,
         'img_format': 'RGB',
-        'img_size': 112,
-        'max_angle': 10,
+        'img_size': 40, #112,
+        'max_angle': 5, #10,
         'buffer2memory': True,
         'max_epoch': 100,
     }
@@ -208,6 +209,7 @@ if __name__ == '__main__':
         print ("get new batch...step: %d. epoch: %d. cost: %.3f"%(i, b.get_epoch(), end_time-start_time))
         start_time = end_time
         batch_image, batch_landmarks = g.next()
+        print 'out batch_image', len(batch_image)
 
         for idx, (image, landmarks) in enumerate(zip(batch_image, batch_landmarks)):
            if idx > 20: # only see first 10
