@@ -17,6 +17,8 @@ class NormlizedMSE(caffe.Layer):
         # check input pair
         if len(bottom) != 2:
             raise Exception("Need two inputs to compute distance.")
+        self.params = eval(self.param_str)
+        self.num_points = self.params['landmark_type']
 
     def reshape(self, bottom, top):
         # check input dimensions match
@@ -41,8 +43,12 @@ class NormlizedMSE(caffe.Layer):
         y_pred = bottom[0].data
 
         #eye_indices = left eye x, left eye y, right eye x, right eye y, nose x, left mouth, right mouth
-        delX = y_true[:,0]-y_true[:,2] # del X size 16
-        delY = y_true[:,1]-y_true[:,3] # del y size 16
+        if self.num_points == 5:
+            delX = y_true[:,0]-y_true[:,2] # del X size 16
+            delY = y_true[:,1]-y_true[:,3] # del y size 16
+        elif self.num_points == 68:
+            delX = (y_true[:,36*2] + y_true[:,39*2])/2-(y_true[:,42*2] + y_true[:,45*2])/2 # del x eye
+            delY = (y_true[:,36*2 +1] + y_true[:,39*2+1])/2-(y_true[:,42*2+1] + y_true[:,45*2+1])/2 # del y eye
         self.interOc = (1e-6+(delX*delX + delY*delY)**0.5).T # Euclidain distance
         #Cannot multiply shape (16,10) by (16,1) so we transpose to (10,16) and (1,16)
         diff = (y_pred-y_true).T # Transpose so we can divide a (16,10) array by (16,1)

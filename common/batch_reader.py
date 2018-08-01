@@ -23,7 +23,7 @@ class BatchReader():
     def __init__(self, **kwargs):
         # param
         self._kwargs = kwargs
-        self._status = kwargs['status']
+        self._need_augment = kwargs['need_augment']
         self._batch_size = kwargs['batch_size']
         self._process_num = kwargs['process_num']
         # total lsit
@@ -39,7 +39,7 @@ class BatchReader():
         self._curr_epoch = 0
         self._max_epoch = kwargs['max_epoch']
         # start buffering
-        self._start_buffering(kwargs['input_paths'], kwargs['landmark_type'])
+        self._start_buffering(kwargs['input_paths'], kwargs['landmark_type'], kwargs['has_bbox'])
 
     def batch_generator(self):
         __curr_queue = 0
@@ -86,12 +86,12 @@ class BatchReader():
                 self._process_list[i].terminate()
         print ("[Exiting] Batch reader clear done!")
 
-    def _start_buffering(self, input_paths, landmark_type):
+    def _start_buffering(self, input_paths, landmark_type, has_bbox):
         if type(input_paths) in [str, unicode]:
             input_paths = [input_paths]
         for input_path in input_paths:
             for line in open(input_path):
-                info = LandmarkHelper.parse(line, landmark_type)
+                info = LandmarkHelper.parse(line, landmark_type, has_bbox)
                 self._sample_list.append(info)
         self._total_sample = len(self._sample_list)
         num_per_process = int(math.ceil(self._total_sample / float(self._process_num)))
@@ -117,7 +117,7 @@ class BatchReader():
         # read all image to memory to speed up!
         if self._kwargs['buffer2memory']:
             print ("[Process %d] Start to read image to memory! Count=%d"%(idx, len(sample_list)))
-            scale_value = 2.5 #3.5
+            scale_value = 2.2 #3.5
             sample_list = __landmark_augment.mini_crop_by_landmarks(sample_list, scale_value, self._kwargs['img_format'])
             print ("[Process %d] Read all image to memory finish!"%(idx))
         sample_cnt = 0 # count for one batch
@@ -125,24 +125,26 @@ class BatchReader():
         while True:
             for sample in sample_list:
                 # preprocess
-                if type(sample[0]) in [str, unicode]:
+                if type(sample[0]) in [str, unicode]: #read jpg image
                     image = cv2.imread(sample[0])
-                    if self._kwargs['img_format'] == 'RGB':
-                        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                    if self._kwargs['img_format'] == 'GRAY':
-                        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                   # if self._kwargs['img_format'] == 'RGB':
+                   #     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                   # if self._kwargs['img_format'] == 'GRAY':
+                   #     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                elif self._kwargs['img_format'] == 'GRAY':
+                    image = cv2.imdecode(sample[0], cv2.IMAGE_GRAYSCALE ) #read jpg stream image
                 else:
-                    image = cv2.imdecode(sample[0], cv2.IMREAD_COLOR)
+                    image = cv2.imdecode(sample[0], cv2.IMREAD_COLOR) #read jpg stream image
                     #image = cv2.imdecode(sample[0], cv2.CV_LOAD_IMAGE_COLOR)
                 landmarks = sample[1].copy()# keep deep copy
 
-                if self._status == 'TRAIN':
+                if self._need_augment:
                     #scale_range = (2.7, 3.3)
                     scale_range = (1.5, 2.3)
                     image_new, landmarks_new = __landmark_augment.augment(image, landmarks, self._kwargs['img_size'],
                                                 self._kwargs['max_angle'], scale_range)
                     #cv2.imwrite("./output_tmp/tmp%d.jpg"%(sample_cnt), image_new)
-                elif self._status == 'TEST':
+                else:
                     ori_h, ori_w = image.shape[:2]
                     # make landmark -> [0,1]
                     landmarks = (1.0*landmarks) / (ori_w, ori_h)
@@ -150,8 +152,8 @@ class BatchReader():
                     new_w = self._kwargs['img_size']
                     new_h = self._kwargs['img_size']
                     image_new = cv2.resize(image, (new_w, new_h))
-                else:
-                    print "error the data status not setting"
+
+                #cv2.imwrite('./testing/test_images/test40x40.jpg', image_new)
 
                 # caffe data format whc->chw
                 im_ = np.transpose(image_new, (2, 0, 1))
@@ -185,10 +187,13 @@ class BatchReader():
 # use for unit test
 if __name__ == '__main__':
     kwargs = {
-        'input_paths': "data/try.txt",
-        'status':"TEST",
+        #'input_paths': "data/try.txt",
+        'input_paths': "data/trainImageList.txt",
+        'need_augment': True,
         'landmark_type': 5,
-        'batch_size': 10,
+        'has_bbox':True,
+        #'batch_size': 10,
+        'batch_size': 512,
         'process_num': 30,
         'img_format': 'RGB',
         'img_size': 40, #112,
@@ -204,7 +209,7 @@ if __name__ == '__main__':
     import time
     start_time = time.time()
     #for i in range(1000000):
-    for i in range(1):
+    for i in range(19):
         end_time = time.time()
         print ("get new batch...step: %d. epoch: %d. cost: %.3f"%(i, b.get_epoch(), end_time-start_time))
         start_time = end_time
@@ -212,8 +217,8 @@ if __name__ == '__main__':
         print 'out batch_image', len(batch_image)
 
         for idx, (image, landmarks) in enumerate(zip(batch_image, batch_landmarks)):
-           if idx > 20: # only see first 10
-               break
+           #if idx > 20: # only see first 10
+           #    break
            landmarks = landmarks.reshape([-1, 2])
            for l in landmarks:
                print 'get landmark', l

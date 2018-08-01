@@ -11,7 +11,7 @@ class LandmarkHelper(object):
     Helper for different landmark type
     '''
     @classmethod
-    def parse(cls, line, landmark_type):
+    def parse(cls, line, landmark_type, has_bbox=False):
         '''
         use for parse txt line to get file path and landmarks and so on
         Args:
@@ -24,8 +24,10 @@ class LandmarkHelper(object):
             unsupport type
         '''
         if landmark_type == 5:
-            return cls.__landmark5_nobbox_txt_parse(line)
-            #return cls.__landmark5_txt_parse(line)
+            if has_bbox:
+                return cls.__landmark5_bbox_txt_parse(line)
+            else:
+                return cls.__landmark5_nobbox_txt_parse(line)
         elif landmark_type == 68:
             return cls.__landmark68_txt_parse(line)
         elif landmark_type == 83:
@@ -69,7 +71,7 @@ class LandmarkHelper(object):
         return landmarks.reshape([-1, 2])
 
     @staticmethod
-    def __landmark5_txt_parse(line):
+    def __landmark5_bbox_txt_parse(line):
         '''
         Args:
             line: 0=file path, 1=[0:4] is bbox and [4:] is landmarks
@@ -79,7 +81,8 @@ class LandmarkHelper(object):
             No
         '''
         a = line.split()
-        data = map(int, a[1:])
+        #data = map(int, a[1:])
+        data = map(float, a[1:])
         pts = data[4:] # x1,y1,x2,y2...
         return a[0], np.array(pts).reshape((-1, 2))
 
@@ -94,7 +97,7 @@ class LandmarkHelper(object):
             No
         '''
         a = line.split()
-        data = map(int, a[1:])
+        data = map(float, a[1:])
         pts = data[0:] # x1,y1,x2,y2...
         return a[0], np.array(pts).reshape((-1, 2))
 
@@ -112,7 +115,7 @@ class LandmarkHelper(object):
         #a1 = np.fromstring(a[1], dtype=int, count=136, sep=',')
         #a1 = a1.reshape((-1, 2))
         #return a[0], a1
-        data = map(int, a[1:])
+        data = map(float, a[1:])
         pts = data[0:]
         return a[0], np.array(pts).reshape((-1, 2))
 

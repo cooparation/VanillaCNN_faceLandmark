@@ -13,17 +13,18 @@ root = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + "/../")
 #    sys.exit()
 #deploy = sys.argv[2]
 #caffe_model = sys.argv[1]
-deploy = root + '/vanilla-40/model_5p/vanilla_deploy.prototxt'
+deploy = './vanilla-40/model_5p/vanilla_deploy.prototxt'
 #caffe_model = '/apps/liusj/snapshot/align/net2/_iter_100000.caffemodel'
+#caffe_model = "/apps/liusj/snapshot/align/net2/_iter_5000.caffemodel"
 caffe_model = './vanilla-40/model_5p/vanillaCNN.caffemodel'
 img_folder = root + '/testing/test_images/'
 
 net = caffe.Net(deploy, caffe_model, caffe.TEST)
 
 for idx, im_path in enumerate(os.listdir(img_folder)):
-    #im_path = os.path.join(img_folder, im_path)
+    im_path = os.path.join(img_folder, im_path)
     #im_path = "testing/test_images/598d20f66f95c4933c07d1c5.jpg"
-    im_path = "testing/test_images/testFace.jpg"
+    #im_path = "testing/test_images/testFace.jpg"
     #im_path = "testing/test_images/3.jpg"
     im = cv2.imread(im_path)
     if im is None:
@@ -33,11 +34,11 @@ for idx, im_path in enumerate(os.listdir(img_folder)):
     im = cv2.resize(im, net.blobs['data'].data.shape[2:])
     im_ = np.transpose(im, (2, 0, 1))
     im_ = im_.astype(np.float32)
-    im_ = im_/127.5-1.0
+    #im_ = im_/127.5-1.0
 
-    #mv = im_.mean()
-    #sv = im_.std()
-    #im_ = (im_ - mv)/(1.0e-6 + sv)
+    mv = im_.mean()
+    sv = im_.std()
+    im_ = (im_ - mv)/(1.0e-6 + sv)
 
     #meanTrainSet = cv2.imread(os.path.join(root, 'trainMean.png')).astype('f4')
     #stdTrainSet = cv2.imread(os.path.join(root, 'trainSTD.png')).astype('f4')
@@ -46,7 +47,7 @@ for idx, im_path in enumerate(os.listdir(img_folder)):
     net.blobs['data'].data[0,...] = im_
     out = net.forward()
     output = net.blobs[net.blobs.keys()[-1]].data
-    output = output.reshape((5, 2))
+    output = output.reshape((-1, 2)) #((5, 2)) or ((68, 2))
     # change to original image
     output = output * np.array([im.shape[1], im.shape[0]])# net.blobs['data'].data.shape[2:]
     output = output.astype(np.int)
